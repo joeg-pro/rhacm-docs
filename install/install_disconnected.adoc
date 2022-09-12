@@ -1,15 +1,28 @@
 [#install-on-disconnected-networks]
 = Install on disconnected networks
 
-You might need to install {product-title} on {ocp} clusters that are not connected to the Internet. The procedure to install on a disconnected hub requires some of the same steps as the connected installation.
+You might need to install {product-title} on {ocp} clusters that are not connected to the Internet, or upgrade an existing
+installation to the latest release in such an environment. The procedure to install or upgrade on a disconnected hub
+requires some special steps to be performed in addition to the usual install or upgrade flow for a 
+connected-network environment.
 
-You must download copies of the packages to access them during the installation, rather than accessing them directly from the network during the installation.
+The notable special steps (details provided below) are:
+
+*	You must have a local image registry that is a mirror of the Openshift operator catalog containing the operator
+packages needed for installing or upgrading the Hub and the container images used by those packages.  You probably 
+already set up a local image registry when you were performing the installation of the {ocp} cluster, so you will
+most likely be adding additional content to that local image registry to represent the mirrored operator catalog. 
+*	When creating the MulticlusterHub resource that manages the Hub components, you will need to add an additional annotation that specifies the name of the catalog source you create for your mirrored catalog.
 
 Before you get started, review the xref:../install/requirements.adoc#requirements-and-recommendations[Requirements and recommendations] section, then see the following documentation:
 
 * <<disconnect-prerequisites,Prerequisites>>
 * <<confirm-ocp-installation-2,Confirm your {ocp-short} installation>>
 * <<installing-in-a-disconnected-environment,Installing in a disconnected environment>>
+
+Note that most of this section focuses on providing information for initial installation of {product-title} in
+disconnected networks.  Special considerations for upgrading from {product-title} release 2.4 to later releases 
+is provided in section XXXXX at the end.
 
 [#disconnect-prerequisites]
 == Prerequisites 
