@@ -9,10 +9,11 @@ connected-network environment.
 The notable special steps (details provided below) are:
 
 *	You must have a local image registry that is a mirror of the Openshift operator catalog containing the operator
-packages needed for installing or upgrading the Hub and the container images used by those packages.  You probably 
-already set up a local image registry when you were performing the installation of the {ocp-short} cluster, so you will
-most likely be adding additional content to that local image registry to represent the mirrored operator catalog. 
-*	When creating the MulticlusterHub resource that manages the Hub components, you will need to add an additional annotation that specifies the name of the catalog source you create for your mirrored catalog.
+packages needed for installing or upgrading the Hub and the container images used by those packages.  (You probably 
+already set up a local image registry when performing the installation of the {ocp-short} cluster.)
+ 
+*	When creating the `MulticlusterHub` resource that manages the Hub components, you will need to add an additional 
+annotation that specifies the name of the catalog source you create for your mirrored catalog.
 
 Before you get started, review the xref:../install/requirements.adoc#requirements-and-recommendations[Requirements and recommendations] section, then see the following documentation:
 
@@ -65,11 +66,84 @@ openshift-console          console             console-openshift-console.apps.ne
 The console URL in this example is: `https:// console-openshift-console.apps.new-coral.purple-chesterfield.com`. Open the URL in your browser and check the result.
 
 +
-If the console URL displays `console-openshift-console.router.default.svc.cluster.local`, set the value for `openshift_master_default_subdomain` when you install {ocp-short}.
+If the console URL displays `console-openshift-console.router.default.svc.cluster.local`,
+set the value for `openshift_master_default_subdomain` when you install {ocp-short}.
 
-See xref:../install/cluster_size.adoc#sizing-your-cluster[Sizing your cluster] to learn about setting up capacity for your hub cluster.
+See xref:../install/cluster_size.adoc#sizing-your-cluster[Sizing your cluster] to learn about setting up capacity
+for your hub cluster.
 
-**ZZZ HERE**
+== Confirm availability of a local image registry
+
+Installing {product-title} in a disconnected environment involves the use of a local mirror image registry.
+Because you have already completed the installation of the {ocp-short} cluster in your disconnected
+you will have already set up a mirror registry for use during the {ocp} cluster installation.
+For simplicity, we recommend that you use your existing mirror registry for the OLM operator related content.
+
+== Configure Operator Lifecycle Manager
+
+Because {product-title} is packaged as an operator, installing, or upgrading it is done using 
+Operator Lifecycle Manager (OLM).
+
+In disconnected environments, OLM cannot access the standard operator sources that provide Red Hat provided
+operators because they are hosted on image registries that are not accessible from a disconnected cluster.
+Instead, a cluster administrator can enable the installation and upgrade of operators on a disconnected environment
+using mirrored image registries/operator catalogs.
+
+To prepare your disconnected cluster for installing {product-title} , follow the procedure described in
+the topic Using Operator Lifecycle Manager on restricted networks in the {ocp-short} documentation.
+The material in following sections augment those procedures to provide additional information that
+is specific to {product-title}.
+
+=== Include operator packages required for RHACM
+
+Red Hat provides the {product-title} operator in the Red Hat operators catalog, which is delivered by the
+`registry.redhat.io/redhat/redhat-operator-index` index image.
+When you prepare your mirror of this catalog index image, you can choose to either mirror the entire catalog as
+provided by Red Hat, or you can mirror a subset that contains only the operator packages that you intend to use.
+
+If you are creating a full mirror catalog, no special considerations are needed as all of the packages required
+for installing {product-title} will be included.
+
+However, if you are creating a partial/filtered mirrored catalog for which you identify particular packages to be 
+included, be sure to include the following package names in your list:
+
+*	`advanced-cluster-manager`
+*	`multicluster-engine`
+
+If you are creating the mirrored catalog/registry using the OPM utility (`opm index prune`), include these package
+names in the value of the `-p` option as shown in this example:
+
+....
+opm index prune \
+   -f registry.redhat.io/redhat/redhat-operator-index:v4.10 \
+   -p advanced-cluster-management,multicluster-engine \
+   -t myregistry.example.com:5000/mirror/my-operator-index:v4.10
+....
+
+If yinstead ou are populating the mirrored catalog/registry using the oc-mirror plugin, include these
+package names in the packages list portion of your `ImageSetConfiguration`, as shown in this example:
+
+[source.yaml]
+kind: ImageSetConfiguration
+apiVersion: mirror.openshift.io/v1alpha2
+storageConfig:
+  registry:
+     imageURL: myregistry.example.com:5000/mirror/oc-mirror-metadata
+mirror:
+  platform:
+    channels:
+    - name: stable-4.10
+      type: ocp
+  operators:
+  - catalog: registry.redhat.io/redhat/redhat-operator-index:v4.10
+    packages:
+    - name: advanced-cluster-management
+    - name: multicluster-engine
+  additionalImages: []
+  helm: {}
+
+
+== TODO: OLD MATERIAL FOR REF
 
 [#installing-in-a-disconnected-environment]
 == Installing in a disconnected environment
