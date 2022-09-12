@@ -19,11 +19,15 @@ Before you get started, review the xref:../install/requirements.adoc#requirement
 
 * <<disconnect-prerequisites,Prerequisites>>
 * <<confirm-ocp-installation-2,Confirm your {ocp-short} installation>>
-* <<installing-in-a-disconnected-environment,Installing in a disconnected environment>>
+* <<disconnect-configure-olm. Configure Operator Lifecycle Manager>> 
+* <<disconnect-configure-icsp, Configure image content source policies>>
+* <<disconnect-install-op-and-hub, Install the {product-title} operator and Hub>>
 
-Note that this section is written to focus on the initial initial installation of {product-title} in
-disconnected networks. Special considerations for upgrading from {product-title} release 2.4 to later releases 
-is provided in section **TODO:**sectoin-ref at the end.
+If you are upgrading an existing Hub rather than instlalling a new one, in particular upgrading
+from {product-title} release 2.4, please see the following documentation for important new
+reuqirements to consider before starting the upgrade:
+
+* <<disconnect-upgrading-from-24, Considerations when upgrading from Release 2.4>>
 
 [#disconnect-prerequisites]
 == Prerequisites 
@@ -79,6 +83,7 @@ Because you have already completed the installation of the {ocp-short} cluster i
 you will have already set up a mirror registry for use during the {ocp} cluster installation.
 For simplicity, we recommend that you use your existing mirror registry for the OLM operator related content.
 
+[#disconnect-configure-olm]
 == Configure Operator Lifecycle Manager
 
 Because {product-title} is packaged as an operator, installing, or upgrading it is done using 
@@ -191,7 +196,8 @@ the catalog source for your mirror catalog:
 *	`advanced-cluster-manager`
 *	`multicluster-engine`
 
-=== Configure image content source policies 
+[#disconnect-configure-icsp]
+== Configure image content source policies 
 
 In order to have your cluster obtain container images for the {product-title} operator from your 
 mirror registry (rather than from the internet-hosted registries) you must configure an 
@@ -235,12 +241,15 @@ spec:
     - myregistry.example.com:5000/redhat
     source: registry.redhat.io/redhat
 
-== Install the {product-title} operator
+[#disconnect-install-op-and-hub]
+== Install the {product-title} operator and Hub
+
+=== Install the {product-title} operator
 
 After you have configured OLM as described above, you can install the {product-title} operator using
 either the OperatorHub UI, or the CLI, as described in **TODO:** ref-to-connected-doc.
 
-== Create the `MulticlusterHub` resource instance
+=== Create the `MulticlusterHub` resource instance
 
 After the {produc-title} operator is installed, you create an instance of the ACM Hub by creating an
 instance of the `MulticlusterHub` resource.
@@ -261,6 +270,7 @@ If you are installing using the OPeratorHub UI, when creating the `MulticlusterH
 the YAML view and insert the annotation as shown above.  Note that it is not possible to specify the
 annotation when usin the field view panels for creating the `MulticlusterHub`.
 
+[#disconnect-upgrading-from-24]
 == Considerations when upgrading from Release 2.4
 
 {product-title} release 2.5.0 is the first release in which ACM uses the related multicluster engine for Kubernetes 
