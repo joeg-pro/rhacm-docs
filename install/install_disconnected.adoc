@@ -19,9 +19,9 @@ Before you get started, review the xref:../install/requirements.adoc#requirement
 
 * <<disconnect-prerequisites,Prerequisites>>
 * <<confirm-ocp-installation-2,Confirm your {ocp-short} installation>>
-* <<disconnect-configure-olm. Configure Operator Lifecycle Manager>> 
-* <<disconnect-configure-icsp, Configure image content source policies>>
-* <<disconnect-install-op-and-hub, Install the {product-title} operator and Hub>>
+* <<disconnect-configure-olm,Configure Operator Lifecycle Manager>> 
+* <<disconnect-configure-icsp,Configure image content source policies>>
+* <<disconnect-install-op-and-hub,Install the {product-title} operator and Hub>>
 
 If you are upgrading an existing Hub rather than instlalling a new one, in particular upgrading
 from {product-title} release 2.4, please see the following documentation for important new
@@ -41,9 +41,6 @@ interface (CLI).  *Note:* For managing bare metal clusters, you must have {ocp-s
 mirrored OLM catalogs and operator images.  You probably already set up a local image registry when installing the
 {ocp-short} cluster in this enviornment, so you should be able to use the same local image registry.
 
-* You need access to the https://catalog.redhat.com/software/containers/search?p=1&application_categories_list=Container%20Platform%20%2F%20Management[catalog.redhat.com].
-**TODO:** Determine why we're saying access to this site is needed.
-
 * See the https://access.redhat.com/documentation/en-us/openshift_container_platform/4.10/html/installing/index[{ocp-short} version 4.10], https://docs.openshift.com/container-platform/4.10/welcome/index.html[{ocp-short} version 4.10]. **TODO**: Where should this rerence to 4.10 go?
 
 * Your {ocp} CLI must be version 4.8 or later, and configured to run `oc` commands.
@@ -52,8 +49,8 @@ for information about installing and configuring the Red Hat OpenShift CLI.
 
 * Your {ocp} permissions must allow you to create a namespace. Installation fails without a namespace.
 
-* You must have a workstation with Internet connection to miccor the {ocp} OLM operator catalog and operator
-images into your local mirror registry.
+* You must have a workstation that has access to both the Internet as well as your local mirror registry 
+ so you can miccor the {ocp} OLM operator catalog and operator images needed for installation or upgrade.
 
 [#confirm-ocp-installation-2]
 == Confirm your {ocp-short} installation
@@ -82,6 +79,10 @@ Installing {product-title} in a disconnected environment involves the use of a l
 Because you have already completed the installation of the {ocp-short} cluster in your disconnected
 you will have already set up a mirror registry for use during the {ocp} cluster installation.
 For simplicity, we recommend that you use your existing mirror registry for the OLM operator related content.
+
+If you do not already have a local image registry, create one by completing the procedure 
+described in topic
+https://access.redhat.com/documentation/en-us/openshift_container_platform/4.10/html/installing/disconnected-installation-mirroring#mirroring-images-disconnected-install[Mirroring images for a disconnected installation] of the {ocp} documentation.
 
 [#disconnect-configure-olm]
 == Configure Operator Lifecycle Manager
@@ -244,31 +245,33 @@ spec:
 [#disconnect-install-op-and-hub]
 == Install the {product-title} operator and Hub
 
-=== Install the {product-title} operator
+After you have configured OLM and {ocp} as described in earlier sections, you can install {product-title}
+using either the OperatorHub UI or a CLI, following the same flow as is described in topic
+ xref:../install/install_connected.adoc#installing-while-connected-online[Installing while connected online].
 
-After you have configured OLM as described above, you can install the {product-title} operator using
-either the OperatorHub UI, or the CLI, as described in **TODO:** ref-to-connected-doc.
-
-=== Create the `MulticlusterHub` resource instance
-
-After the {produc-title} operator is installed, you create an instance of the ACM Hub by creating an
-instance of the `MulticlusterHub` resource.
-This creation of this resource triggers the installation of the Hub components that provide its management capabilities.
+However, there is a special consideration to note when creating the instance of the `MulticlusterHub` resource
+that triggeers the installation of your hub.
 
 Because operator installation on a cluster requires the use of a non-default catalog source for the
 mirror catalog, a special annotation is needed in the `MulticlusterHub` resource in order to provide the
 name of the mirror catalog source to the operator.  The following example shows the required 
 `mce-subscrioption-spec` annotation:
-....
-ADD EXAMPLE
-....
 
-If you are installing via CLI, include the `mce-subscription-spec` annotation 
+[source.yaml]
+apiVersion: operator.open-cluster-management.io/v1
+kind: MultiClusterHub
+metadata:
+   annotations:
+      installer.open-cluster-management.io/mce-subscription-spec: '{"source": "my-mirror-catalog-source"}'
+spec: {}
+
+If you are creating the resource via CLI, include the `mce-subscription-spec` annotation 
 in the YAML you will use with the `oc apply` command to create the `MulticlusterHub` resource.
 
-If you are installing using the OPeratorHub UI, when creating the `MulticlusterHub` resource, switch to
-the YAML view and insert the annotation as shown above.  Note that it is not possible to specify the
-annotation when usin the field view panels for creating the `MulticlusterHub`.
+If you are creating the resource using the OPeratorHub UI, switch to
+the YAML view and insert the annotation as shown above.
+Note that it is not possible to specify the annotation when usin the field view panels for
+creating the `MulticlusterHub`.
 
 [#disconnect-upgrading-from-24]
 == Considerations when upgrading from Release 2.4
