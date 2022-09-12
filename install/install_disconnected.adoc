@@ -95,13 +95,15 @@ operators because they are hosted on image registries that are not accessible fr
 Instead, a cluster administrator can enable the installation and upgrade of operators on a disconnected environment
 using mirrored image registries/operator catalogs.
 
-To prepare your disconnected cluster for installing {product-title} , follow the procedure described in the topic 
-"Using Operator Lifecycle Manager on restricted networks" (**TODO*: make link)
+To prepare your disconnected cluster for installing {product-title}, follow the procedure described in the topic
+https://access.redhat.com/documentation/en-us/openshift_container_platform/4.10/html-single/operators/index#olm-restricted-networks[Using Operator Lifecycle Manager on restricted networks]
 in the {ocp-short} documentation.
+
 When performing those pocedures, please keep in mind the the follow requirements specific
 to {product-title}.
 
-=== Include operator packages required for RHACM
+[#disconnect-include-acm-pkgs]
+=== Include operator packages required for ACM in your mirror catalog
 
 Red Hat provides the {product-title} operator in the Red Hat operators catalog, which is delivered by the
 `registry.redhat.io/redhat/redhat-operator-index` index image.
@@ -130,7 +132,8 @@ opm index prune \
 If yinstead ou are populating the mirrored catalog/registry using the oc-mirror plugin, include these
 package names in the packages list portion of your `ImageSetConfiguration`, as shown in this example:
 
-[source.yaml]
+[source,yaml]
+----
 kind: ImageSetConfiguration
 apiVersion: mirror.openshift.io/v1alpha2
 storageConfig:
@@ -148,6 +151,7 @@ mirror:
     - name: multicluster-engine
   additionalImages: []
   helm: {}
+----  
 
 === Configure OLM to use your mirror registry
 
@@ -167,7 +171,8 @@ As described in the procedures in the {ocp} documentation, you will add a catalo
 disconnected cluster by adding a `CatalougSource` resource into the `openshift-marketplace` namespace
 using a YAML file similar to the following example:
 
-[source.yaml]
+[source,yaml]
+----
 apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
@@ -176,6 +181,7 @@ metadata:
 spec:
   image: myregistry.example.com:5000/mirror/my-operator-index:v4.10
   sourceType: grpc
+----  
 
 Take note of the name of this resource (the `metadata.name` field) as you will need to specify that same name in 
 an annotation of the `MulticlusterHub` resource you will create later.
@@ -220,7 +226,8 @@ oc replace -f ./<path>/imageContentSourcePolicy.yaml
 The required image content source policy statements can vary based on how you created your mirror registry,
 but will be similar to this example:
 
-[source.yaml]
+[source,yaml]
+----
 apiVersion: operator.openshift.io/v1alpha1
 kind: ImageContentSourcePolicy
 metadata:
@@ -241,9 +248,10 @@ spec:
   - mirrors:
     - myregistry.example.com:5000/redhat
     source: registry.redhat.io/redhat
+----
 
 [#disconnect-install-op-and-hub]
-== Install the {product-title} operator and Hub
+== Install the RHACM operator and Hub
 
 After you have configured OLM and {ocp} as described in earlier sections, you can install {product-title}
 using either the OperatorHub UI or a CLI, following the same flow as is described in topic
@@ -257,13 +265,17 @@ mirror catalog, a special annotation is needed in the `MulticlusterHub` resource
 name of the mirror catalog source to the operator.  The following example shows the required 
 `mce-subscrioption-spec` annotation:
 
-[source.yaml]
+[source,yaml]
+----
 apiVersion: operator.open-cluster-management.io/v1
 kind: MultiClusterHub
 metadata:
+   namespace: open-cluster-management
+   name: hub
    annotations:
       installer.open-cluster-management.io/mce-subscription-spec: '{"source": "my-mirror-catalog-source"}'
 spec: {}
+----
 
 If you are creating the resource via CLI, include the `mce-subscription-spec` annotation 
 in the YAML you will use with the `oc apply` command to create the `MulticlusterHub` resource.
@@ -274,7 +286,7 @@ Note that it is not possible to specify the annotation when usin the field view 
 creating the `MulticlusterHub`.
 
 [#disconnect-upgrading-from-24]
-== Considerations when upgrading from Release 2.4
+== Considerations when upgrading from release 2.4
 
 {product-title} release 2.5.0 is the first release in which ACM uses the related multicluster engine for Kubernetes 
 operator functionality to provide foundational services that previously were delivered as part of ACM itself.
@@ -289,7 +301,7 @@ However, because installation of any OLM operator in a disconnected environment 
 catalogs and catalog sources (as described in the earlier sections), some additional steps are necessary above
 what was done when installing ACM release 2.4 or earlier, as described below.
 
-=== Update your procedures for creating the mirror catalog
+=== Update your procedures for populating the mirror catalog
 
 If, when installing ACM release 2.4, you mirroring procedures created a full copy of the Red Hat operators catalog,
 no special updates to your mirroring proecreus are required other than refreshing your catalog to pick up the
@@ -298,12 +310,15 @@ updated content for the new operator releases.
 If, on the other hand, your procedures populated mirror catalog that is a filtered catalog, you will need to update
 your mirroring procedures to ensure that the `multcluster-engine` operator package is included in the 
 mirror catalog in addition to the `advanced-cluster-management` package.
-Section **TODO:* section-ref above  provides examples of the need options for creating the mirror catalog.
+Topic <<disconnect-include-acm-pkgs,Include operator packages required for ACM>> 
+above above  provides examples of the options to use when populting the mirror catalog.
 Update the operator-package lists used in your procedures to match these new requirements.
 
 === Update your MutliclusterHub resource instance
 
-As described in **TODO:** section-ref above, a new annotation is required on the `MulticlusterHub` resource
+As described in the topic 
+<<disconnect-install-op-and-hub,Install the RHACM operator and Hub>>
+above, a new annotation is required on the `MulticlusterHub` resource
 when the Hub is being installd or upgraded in a disconnected environment.
 
 For the smoothest upgrade experience, Red Hat recommends that you update your `MulticlusterHub` resource instance
@@ -314,12 +329,12 @@ Making this update first allows the upgrade to proceed without delay once initia
 Use the `oc edit` command to update your `Multiclusterub` resource to add the `mce-subscription-spec` annotation
 as shown in this example:
 
-[source.yaml]
-apiVersion: operator.open-cluster-management.io/v1
-kind: MultiClusterHub
+[source,yaml]
+----
 metadata:
    annotations:
       installer.open-cluster-management.io/mce-subscription-spec: '{"source": "<my-mirror-catalog-source>"}'
+----
 
 Replace <my-mirror-catalog-source> shown in this example with the name of the `CatalogSource` resource
 (in the `openshift-marketplace` namespace) for your mirror catalog.
@@ -332,47 +347,13 @@ However, this situation can be corrected, and the upgrade completed by using `oc
 
 == TODO: OLD MATERIAL FOR REF
 
+THIS IS OLD MATERIAL NOT YET ADDRESSSED IN RESTRUCTURE.  ALL TO BE DELETED.
+
 [#installing-in-a-disconnected-environment]
 == Installing in a disconnected environment
 
-*Important:* You need to download the required images to a mirroring registry to install the operators in a disconnected environment. Without the download, you might receive `ImagePullBackOff` errors during your deployment.
-
-Follow these steps to install {product-title-short} in a disconnected environment:
-
-. Create a mirror registry. If you do not already have a mirror registry, create one by completing the procedure in the https://access.redhat.com/documentation/en-us/openshift_container_platform/4.10/html/installing/disconnected-installation-mirroring#mirroring-images-disconnected-install[Mirroring images for a disconnected installation] topic of the {ocp} documentation.
-
-+
-If you already have a mirror registry, you can configure and use your existing one.
-
-+
-**Note:** Ensure you follow the steps in the {ocp-short} documentation at https://access.redhat.com/documentation/en-us/openshift_container_platform/4.10/html-single/post-installation_configuration/index#post-install-mirrored-catalogs[Populating OperatorHub from mirrored Operator catalogs].
-
-. Mirror operator catalogs. Ensure that the operator catalogs are mirrored by following the procedure in https://access.redhat.com/documentation/en-us/openshift_container_platform/4.10/html/installing/disconnected-installation-mirroring#olm-mirror-catalog_installing-mirroring-installation-images[Mirroring Operator catalogs for use with disconnected clusters].
-
 **Notes:** 
 
-- If you are pruning packages from the existing Red Hat Operators index image, ensure that both the `advanced-cluster-management` and `multicluster-engine` packages are pruned. See https://access.redhat.com/documentation/en-us/openshift_container_platform/4.10/html-single/operators/index#olm-pruning-index-image_olm-restricted-networks[Filtering a SQLite-based index image] for more information.
-
-- During the process for https://access.redhat.com/documentation/en-us/openshift_container_platform/4.10/html/installing/disconnected-installation-mirroring#olm-mirror-catalog-manifests_installing-mirroring-installation-images[Generated manifests], you will generate a `catalogSource.yaml` file in the manifest directory. You will use this sample file when you configure the disconnected {olm}.
-
-- For bare metal only, you need to provide the certificate information for the disconnected registry in your `install-config.yaml` file. To access the image in a protected disconnected registry, you must provide the certificate information so {product-title-short} can access the registry.
-
-.. Copy the certificate information from the registry.
-.. Open the `install-config.yaml` file in an editor.
-.. Find the entry for `additionalTrustBundle: |`.
-.. Add the certificate information after the `additionalTrustBundle` line. The content result is similar to the following example:
-
-+
-[source,yaml]
-----
-additionalTrustBundle: |
-  -----BEGIN CERTIFICATE-----
-  certificate_content
-  -----END CERTIFICATE-----
-sshKey: >-
-----
-
-+ 
 *Important:* Additional mirrors for disconnected image registries are needed if the following Governance policies are required:
 
 +
@@ -422,27 +403,3 @@ spec:
 ----
 oc apply -f rhacm-policy.yaml
 ----
-
-. Enable the disconnected {olm} Red Hat Operators and Community Operators. {product-title-short} is included in the {olm} Red Hat Operator catalog.
-
-. Configure the disconnected {olm} for the Red Hat Operator catalog. Follow the steps in the https://access.redhat.com/documentation/en-us/openshift_container_platform/4.10/html/operators/administrator-tasks#olm-restricted-networks[Using Operator Lifecycle Manager on restricted networks] topic of the {ocp} documentation.
-
-+
-* For the https://access.redhat.com/documentation/en-us/openshift_container_platform/4.10/html/operators/administrator-tasks#olm-creating-catalog-from-index_olm-restricted-networks[Adding a catalog source to a cluster] step, use the `catalogSource.yaml` file that you created when mirroring the operator catalog.
-
-+
-* If you use your own `catalogSource.yaml` file and the catalog source name is different from the expected `redhat-operator-index`, you will need to add the following annotation to the `MultiClusterHub` custom resource with your catalog source in place of `my-operator-catalog`.
-
-+
-[source,yaml]
-----
-apiVersion: operator.open-cluster-management.io/v1
-kind: MultiClusterHub
-metadata:
-  annotations:
-    installer.open-cluster-management.io/mce-subscription-spec: '{"source": "my-operator-catalog"}'
-----
-
-Now that you have the image in the disconnected {olm}, continue to install {product-title-short} for Kubernetes from the {olm} catalog.
-
-See xref:../install/install_connected.adoc#installing-while-connected-online[Installing while connected online] for the required steps, or return to the xref:../install/install_overview.adoc#installing[Installing] overview.
