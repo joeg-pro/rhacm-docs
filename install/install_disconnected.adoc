@@ -254,7 +254,68 @@ name of the mirror catalog source to the operator.  The following example shows 
 ADD EXAMPLE
 ....
 
+If you are installing via CLI, include the `mce-subscription-spec` annotation 
+in the YAML you will use with the `oc apply` command to create the `MulticlusterHub` resource.
 
+If you are installing using the OPeratorHub UI, when creating the `MulticlusterHub` resource, switch to
+the YAML view and insert the annotation as shown above.  Note that it is not possible to specify the
+annotation when usin the field view panels for creating the `MulticlusterHub`.
+
+== Considerations when upgrading from Release 2.4
+
+{product-title} release 2.5.0 is the first release in which ACM uses the related multicluster engine for Kubernetes 
+operator functionality to provide foundational services that previously were delivered as part of ACM itself.
+Releases 2.5 and later of the {product-title} operator will automatically install and manage the required
+multicluster engine for Kubernetes operator and `MulticlusterEngine` resource instance as part of its 
+installation and upgrade of the Hub.
+
+In connected network environments, it is able to do so without any special actions on the part of the
+cluster administrator installing or upgrading RH ACM.
+
+However, because installation of any OLM operator in a disconnected environment involves the use of special mirror
+catalogs and catalog sources (as described in the earlier sections), some additional steps are necessary above
+what was done when installing ACM release 2.4 or earlier, as described below.
+
+=== Update your procedures for creating the mirror catalog
+
+If, when installing ACM release 2.4, you mirroring procedures created a full copy of the Red Hat operators catalog,
+no special updates to your mirroring proecreus are required other than refreshing your catalog to pick up the
+updated content for the new operator releases.
+
+If, on the other hand, your procedures populated mirror catalog that is a filtered catalog, you will need to update
+your mirroring procedures to ensure that the `multcluster-engine` operator package is included in the 
+mirror catalog in addition to the `advanced-cluster-management` package.
+Section **TODO:* section-ref above  provides examples of the need options for creating the mirror catalog.
+Update the operator-package lists used in your procedures to match these new requirements.
+
+=== Update your MutliclusterHub resource instance
+
+As described in **TODO:** section-ref above, a new annotation is required on the `MulticlusterHub` resource
+when the Hub is being installd or upgraded in a disconnected environment.
+
+For the smoothest upgrade experience, Red Hat recommends that you update your `MulticlusterHub` resource instance
+to include the needed annotation before you change the OLM update channel in your OLM subscription
+to the `advanced-cluster-management` operator package to trigger the upgrade from release 2.4.
+Making this update first allows the upgrade to proceed without delay once initiated.
+
+Use the `oc edit` command to update your `Multiclusterub` resource to add the `mce-subscription-spec` annotation
+as shown in this example:
+
+[source.yaml]
+apiVersion: operator.open-cluster-management.io/v1
+kind: MultiClusterHub
+metadata:
+   annotations:
+      installer.open-cluster-management.io/mce-subscription-spec: '{"source": "<my-mirror-catalog-source>"}'
+
+Replace <my-mirror-catalog-source> shown in this example with the name of the `CatalogSource` resource
+(in the `openshift-marketplace` namespace) for your mirror catalog.
+
+If you trigger an upgrade from release 2.4 to release 2.5 before mating this upgrade, the upgrade will begin
+but then stall at the point the operator attempts to install a subscription to `multicluster-engine` under the covers.
+The status of the `MulitclusterHub` resource will continue to show status `Upgrading` when this occurs.
+However, this situation can be corrected, and the upgrade completed by using `oc edit` to add the
+`mce-subscription-spec` annocation as shown above.
 
 == TODO: OLD MATERIAL FOR REF
 
