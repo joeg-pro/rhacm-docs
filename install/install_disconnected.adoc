@@ -10,7 +10,7 @@ The notable special steps (details provided below) are:
 
 *	You must have a local image registry that is a mirror of the Openshift operator catalog containing the operator
 packages needed for installing or upgrading the Hub and the container images used by those packages.  You probably 
-already set up a local image registry when you were performing the installation of the {ocp} cluster, so you will
+already set up a local image registry when you were performing the installation of the {ocp-short} cluster, so you will
 most likely be adding additional content to that local image registry to represent the mirrored operator catalog. 
 *	When creating the MulticlusterHub resource that manages the Hub components, you will need to add an additional annotation that specifies the name of the catalog source you create for your mirrored catalog.
 
@@ -20,26 +20,35 @@ Before you get started, review the xref:../install/requirements.adoc#requirement
 * <<confirm-ocp-installation-2,Confirm your {ocp-short} installation>>
 * <<installing-in-a-disconnected-environment,Installing in a disconnected environment>>
 
-Note that most of this section focuses on providing information for initial installation of {product-title} in
-disconnected networks.  Special considerations for upgrading from {product-title} release 2.4 to later releases 
-is provided in section XXXXX at the end.
+Note that this section is written to focus on the initial initial installation of {product-title} in
+disconnected networks. Special considerations for upgrading from {product-title} release 2.4 to later releases 
+is provided in section **TODO:**sectoin-ref at the end.
 
 [#disconnect-prerequisites]
 == Prerequisites 
 
 You must meet the following requirements before you install {product-title}:
 
-* {ocp} version 4.8 or later must be deployed in your environment, and you must be logged in with the command line interface (CLI). 
+* {ocp} version 4.8 or later must be deployed in your environment, and you must be logged in with the command line 
+interface (CLI).  *Note:* For managing bare metal clusters, you must have {ocp-short} version 4.8 or later. 
+
+* Since you are installing in a disconnected network enviornment, you need access to a local image registry to hold
+mirrored OLM catalogs and operator images.  You probably already set up a local image registry when installing the
+{ocp-short} cluster in this enviornment, so you should be able to use the same local image registry.
 
 * You need access to the https://catalog.redhat.com/software/containers/search?p=1&application_categories_list=Container%20Platform%20%2F%20Management[catalog.redhat.com].
-+
-*Note:* For managing bare metal clusters, you must have {ocp-short} version 4.8 or later.
-+
-See the https://access.redhat.com/documentation/en-us/openshift_container_platform/4.10/html/installing/index[{ocp-short} version 4.10], https://docs.openshift.com/container-platform/4.10/welcome/index.html[{ocp-short} version 4.10].
+**TODO:** Determine why we're saying access to this site is needed.
 
-* Your {ocp} CLI must be version 4.8 or later, and configured to run `oc` commands. See https://access.redhat.com/documentation/en-us/openshift_container_platform/4.10/html/cli_tools/openshift-cli-oc#cli-getting-started[Getting started with the CLI] for information about installing and configuring the Red Hat OpenShift CLI.
+* See the https://access.redhat.com/documentation/en-us/openshift_container_platform/4.10/html/installing/index[{ocp-short} version 4.10], https://docs.openshift.com/container-platform/4.10/welcome/index.html[{ocp-short} version 4.10]. **TODO**: Where should this rerence to 4.10 go?
+
+* Your {ocp} CLI must be version 4.8 or later, and configured to run `oc` commands.
+See https://access.redhat.com/documentation/en-us/openshift_container_platform/4.10/html/cli_tools/openshift-cli-oc#cli-getting-started[Getting started with the CLI]
+for information about installing and configuring the Red Hat OpenShift CLI.
+
 * Your {ocp} permissions must allow you to create a namespace. Installation fails without a namespace.
-* You must have a workstation with Internet connection to download the dependencies for the operator.
+
+* You must have a workstation with Internet connection to miccor the {ocp} OLM operator catalog and operator
+images into your local mirror registry.
 
 [#confirm-ocp-installation-2]
 == Confirm your {ocp-short} installation
@@ -59,6 +68,8 @@ The console URL in this example is: `https:// console-openshift-console.apps.new
 If the console URL displays `console-openshift-console.router.default.svc.cluster.local`, set the value for `openshift_master_default_subdomain` when you install {ocp-short}.
 
 See xref:../install/cluster_size.adoc#sizing-your-cluster[Sizing your cluster] to learn about setting up capacity for your hub cluster.
+
+**ZZZ HERE**
 
 [#installing-in-a-disconnected-environment]
 == Installing in a disconnected environment
