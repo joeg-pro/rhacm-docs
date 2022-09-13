@@ -27,7 +27,7 @@ If you are upgrading an existing Hub rather than instlalling a new one, in parti
 from {product-title} release 2.4, please see the following documentation for important new
 reuqirements to consider before starting the upgrade:
 
-* <<disconnect-upgrading-from-24, Considerations when upgrading from Release 2.4>>
+* <<disconnect-upgrading-from-24, Considerations when upgrading from release 2.4>>
 
 [#disconnect-prerequisites]
 == Prerequisites 
@@ -35,19 +35,19 @@ reuqirements to consider before starting the upgrade:
 You must meet the following requirements before you install {product-title}:
 
 * {ocp} version 4.8 or later must be deployed in your environment, and you must be logged in with the command line 
-interface (CLI).  *Note:* For managing bare metal clusters, you must have {ocp-short} version 4.8 or later. 
-
-* Since you are installing in a disconnected network enviornment, you need access to a local image registry to hold
-mirrored OLM catalogs and operator images.  You probably already set up a local image registry when installing the
-{ocp-short} cluster in this enviornment, so you should be able to use the same local image registry.
-
-* See the https://access.redhat.com/documentation/en-us/openshift_container_platform/4.10/html/installing/index[{ocp-short} version 4.10], https://docs.openshift.com/container-platform/4.10/welcome/index.html[{ocp-short} version 4.10]. **TODO**: Where should this rerence to 4.10 go?
+interface (CLI). 
++
+See the https://access.redhat.com/documentation/en-us/openshift_container_platform/4.10/html/installing/index[{ocp-short} version 4.10 install documentation] for infomration on installing {ocp}.
 
 * Your {ocp} CLI must be version 4.8 or later, and configured to run `oc` commands.
 See https://access.redhat.com/documentation/en-us/openshift_container_platform/4.10/html/cli_tools/openshift-cli-oc#cli-getting-started[Getting started with the CLI]
 for information about installing and configuring the Red Hat OpenShift CLI.
 
 * Your {ocp} permissions must allow you to create a namespace. Installation fails without a namespace.
+
+* Since you are installing in a disconnected network enviornment, you need access to a local image registry to hold
+mirrored OLM catalogs and operator images.  You probably already set up a local image registry when installing the
+{ocp-short} cluster in this enviornment, so you should be able to use the same local image registry.
 
 * You must have a workstation that has access to both the Internet as well as your local mirror registry 
  so you can miccor the {ocp} OLM operator catalog and operator images needed for installation or upgrade.
@@ -342,62 +342,3 @@ but then stall at the point the operator attempts to install a subscription to `
 The status of the `MulitclusterHub` resource will continue to show status `Upgrading` when this occurs.
 However, this situation can be corrected, and the upgrade completed by using `oc edit` to add the
 `mce-subscription-spec` annocation as shown above.
-
-== TODO: OLD MATERIAL FOR REF
-
-THIS IS OLD MATERIAL NOT YET ADDRESSSED IN RESTRUCTURE.  ALL TO BE DELETED.
-
-[#installing-in-a-disconnected-environment]
-== Installing in a disconnected environment
-
-**Notes:** 
-
-*Important:* Additional mirrors for disconnected image registries are needed if the following Governance policies are required:
-
-+
- ** Container security operator policy: The images are located in the source `registry.redhat.io/quay`.
-
- ** Compliance operator policy: The images are located in the source `registry.redhat.io/compliance`.
-
- ** Gatekeeper operator policy: The images are located in the source `registry.redhat.io/rhacm2`.
-
-+
-See the following example of mirrors lists for all three operators:
-
-+
-[source,yaml]
-----
-    - mirrors:
-      - <your_registry>/rhacm2
-      source: registry.redhat.io/rhacm2
-    - mirrors:
-      - <your_registry>/quay
-      source: registry.redhat.io/quay
-    - mirrors:
-      - <your_registry>/compliance
-      source: registry.redhat.io/compliance
-----
-
-. Save the `install-config.yaml` file.
-
-. Create a YAML file that contains the `ImageContentSourcePolicy` with the name `rhacm-policy.yaml`. *Note:* If you modify this on a running cluster, it causes a rolling restart of all nodes.
-
-+
-[source,yaml]
-----
-apiVersion: operator.openshift.io/v1alpha1
-kind: ImageContentSourcePolicy
-metadata:
-  name: rhacm-repo
-spec:
-  repositoryDigestMirrors:
-  - mirrors:
-    - mirror.registry.com:5000/rhacm2
-    source: registry.redhat.io/rhacm2
-----
-
-. Apply the `ImageContentSourcePolicy` file by entering the following command:
-+
-----
-oc apply -f rhacm-policy.yaml
-----
