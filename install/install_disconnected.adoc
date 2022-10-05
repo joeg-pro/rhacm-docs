@@ -27,7 +27,7 @@ the xref:../install/requirements.adoc#requirements-and-recommendations[Requireme
 * <<disconnect-confirm-ocp-installation,Confirm your {ocp-short} installation>>
 * <<disconnect-configure-olm,Configure Operator Lifecycle Manager>> 
 * <<disconnect-configure-icsp,Configure image content source policies>>
-* <<disconnect-install-op-and-hub,Install the {product-title} operator and Hub>>
+* <<disconnect-install-op-and-hub,Install the {product-title} operator and hub>>
 
 [#disconnect-prerequisites]
 == Prerequisites 
@@ -251,7 +251,7 @@ spec:
 ----
 
 [#disconnect-install-op-and-hub]
-== Install the RHACM operator and Hub
+== Install the {product-title} operator and hub
 
 After you have configured OLM and {ocp} as described in earlier sections, you can install {product-title}
 using either the OperatorHub UI or a CLI, following the same flow as is described in topic
