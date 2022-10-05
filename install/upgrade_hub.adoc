@@ -78,21 +78,21 @@ when upgrading {product-title} in a disconnected network environment.
 [#disconnect-upgrading]
 === Considerations when upgrading from release 2.5 or later
 
-During your installation of, upgrade of, {product-title} to release 2.5 or later,
+During your installation, or upgrade, of {product-title} to release 2.5 or later,
 you will have already encountered the need for special consderations related
 to the interdependency between the
 {product-title} and multicluster engine for Kubernetes operators.
 Refer to topic
-TODO-need-ref-to-install-file for a details about these installt-ime
+TODO-need-ref-to-install-file for details about these installt-ime
 special considerations.
 
 Similar considerations continue to apply when upgrading {product-title}.
 
-Please see the following sections for information on things to keep in
+Please see the following sections for things to keep in
 mind when preparing to upgrade {product-title}.
 We recommend that you satisfy these requirements before you trigger
-the upgrade of {product-title} by updating the update
-channel in the OLM subscriptino for the {product-title} operator.
+the upgrade of {product-title} (before changing the update channel
+in your OLM subscription to the channel for the new release).
 Failure to do so may result in a stalled upgrade which could impact
 the availability/functioning of {product-title} services.
 
@@ -107,7 +107,7 @@ your mirror catalog and registry to pick up the updated versions
 of the operator packages.
 
 Similar to what was required when initially installing, ensure that your procedures
-for updating your mirror catalog and registry include both of the following operator
+for updating your mirror catalog and registry include the following operator
 packagesin the list of operator backges to be included/updated:
 
 * `advanced-cluster-manager`
