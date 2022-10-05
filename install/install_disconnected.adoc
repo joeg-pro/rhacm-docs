@@ -1,5 +1,5 @@
 [#install-on-disconnected-networks]
-= Install on disconnected networks
+= Install in disconnected network environments
 
 You might need to install Red Hat Advanced Cluster Management for Kubernetes on
 a {ocp-short} clusters that are not connected to the Internet.
